@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, #d9e5ff, #a7c6ed); /* Soft gradient background */
+            transition: background 0.5s, color 0.5s;
+        }
+    
+        h1, h2 {
+            margin: 0;
+            padding: 0;
+        }
+    
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        
+        .sidebar {
+    width: 300px;
+    background-color: #09022b; /* New sidebar background color */
+    color: white;
+    padding: 25px;
+    height: 100vh;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar h2 {
+    font-size: 28px; /* Bigger heading */
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    font-size: 18px;
+    padding: 18px;
+    margin-bottom: 20px;
+    background-color: #3F92BB; /* Updated button color */
+    border-radius: 10px;
+    text-align: center;
+    display: block;
+    color: white;
+    text-decoration: none;
+    position: relative; /* Required for proper positioning of ::after */
+    transition: 0.3s ease;
+}
+
+.sidebar a:hover {
+    background-color: #2c82a0; /* Hover color */
+    box-shadow: 0 0 10px rgba(63, 146, 187, 0.8); /* Glow effect only on button */
+}
+
+.sidebar a::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    transition: transform 0.5s ease;
+    transform: scale(0);
+    border-radius: 10px; /* Match button border radius */
+}
+
+.sidebar a:hover::after {
+    transform: scale(1);
+}
+
+
+
+
+.weather-section {
+    background-color: #9fb9f3;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
+}
+
+.weather-section:hover {
+    transform: translateY(-5px); /* Lift effect */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
+
+.weather-section h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+
+
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+    
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          
+            color: white;
+            padding: 0 20px;
+        }
+    
+
+
+
+
+
+
+
+        .header input[type="text"] {
+
+    padding: 12px;
+    width: 350px; /* Increased width for larger input field */
+    border-radius: 8px; /* Softer rounded corners */
+    border: 2px solid transparent;
+    background-color: #f0f0f0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+    .header input[type="text"]:focus {
+    border-color: #3F92BB; /* Highlight border on focus */
+    background-color: #ffffff;
+    outline: none; /* Remove default outline */
+    box-shadow: 0 4px 10px rgba(63, 146, 187, 0.5); /* Stronger shadow on focus */
+    transform: scale(1.02); /* Slightly enlarge on focus */
+        }
+
+    
+        .header button {
+            padding: 10px;
+            background-color: #acd3ee;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    
+   
+
+.current-weather {
+    background-color: #9ed2f7;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
+}
+
+.current-weather:hover {
+    transform: translateY(-5px); /* Lift effect */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
+
+    
+        .loading-spinner {
+            display: none;
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #084e7d;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+            margin: auto;
+        }
+    
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    
+        .weather-icon {
+            animation: fadeIn 1.5s;
+        }
+    
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    
+        .chart-container {
+            display: flex;
+            justify-content: space-between;
+        }
+    
+        .chart {
+    background-color: #c7daf3; /* Chart background color */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(12, 51, 101, 0.7); /* Glow effect */
+    margin-bottom: 20px;
+    margin-left: 20px;
+    width: 32%;
+    transition: box-shadow 0.3s ease; /* Smooth transition for hover */
+}
+
+.chart:hover {
+    box-shadow: 0 0 25px rgba(125, 166, 219, 1); /* Stronger glow on hover */
+}
+
+    
+        canvas {
+            max-width: 300px;
+            max-height: 200px;
+        }
+
+
+
+        button {
+    padding: 12px 20px; /* Comfortable size */
+    border: none;
+    border-radius: 25px; /* Rounded edges for a cute look */
+    background-color: #3F92BB; /* Main button color */
+    color: white; /* Text color */
+    font-size: 16px; /* Font size */
+    cursor: pointer; /* Pointer cursor on hover */
+    box-shadow: 0 4px 10px rgba(63, 146, 187, 0.5); /* Subtle shadow */
+    transition: all 0.3s ease; /* Smooth transition */
+}
+
+button:hover {
+    background-color: #2c82a0; /* Darker color on hover */
+    transform: translateY(-3px); /* Slight lift on hover */
+    box-shadow: 0 8px 15px rgba(63, 146, 187, 0.8); /* Enhanced shadow */
+}
+
+button:focus {
+    outline: none; /* Remove outline */
+    box-shadow: 0 0 15px rgba(63, 146, 187, 1); /* Glow effect on focus */
+}
+
+
+.current-weather {
+    background: rgba(255, 255, 255, 0.8); /* White with transparency for glass effect */
+    padding: 30px; /* Increased padding for a bigger look */
+    border-radius: 15px; /* Rounded corners */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); /* White glow effect */
+    backdrop-filter: blur(10px); /* Glass-like effect */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+    max-width: 400px; /* Set a max width */
+    margin: 20px auto; /* Centering */
+    text-align: center; /* Center text */
+    font-family: 'Arial', sans-serif; /* Font family */
+    color: #2c3e50; /* Dark color for text */
+}
+
+.current-weather h3 {
+    font-size: 26px; /* Larger font size for city name */
+    color: #1e115c; /* Darker color for headings */
+}
+.current-weather p {
+    font-size: 18px; /* Increased font size for weather info */
+    color: #4a92b2; /* Softer color for weather info */
+}
+
+.weather-icon {
+    width: 80px; /* Increase icon size */
+    height: 80px; /* Maintain aspect ratio */
+    margin: 10px 0; /* Spacing around the icon */
+    background-color: rgba(25, 13, 113, 0.9); /* Light background */
+    border-radius: 12px; /* Rounded corners */
+    padding: 10px; /* Padding around the icon */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Subtle shadow effect */
+    display: inline-flex; /* Align icon within box */
+    align-items: center; /* Center the icon vertically */
+    justify-content: center; /* Center the icon horizontally */
+}
+h6 {
+    font-size: 28px; /* Increase font size for prominence */
+    color: #2c3e50; /* Dark color for the text */
+    margin-bottom: 50px; /* Space below the heading */
+    text-align: center; /* Center align the heading */
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3); /* Subtle shadow for depth */
+    background-color: rgba(255, 255, 255, 0.8); /* Light background for contrast */
+    padding: 10px; /* Padding around the text */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Glowing shadow effect */
+
+}
+
+
+
+
+
+
+
+.search-bar {
+    padding: 12px;
+    width: 300px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    border-radius: 10px; /* Softer corners */
+    border: 2px solid #4a92b2; /* Softer border color */
+    box-shadow: 0 0 10px rgba(74, 146, 178, 0.5); /* Glow effect */
+    outline: none; /* Remove default outline */
+    transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+    background-color: #d2e7f3; /* Soft background color */
+    font-size: 16px; /* Font size */
+}
+
+.search-bar::placeholder {
+    color: #6ba0c9; /* Placeholder color */
+    opacity: 0.7; /* Slightly faded for visibility */
+}
+
+.search-bar:focus {
+    background-color: #a7c6ed; /* Slightly darker when focused */
+    box-shadow: 0 0 15px rgba(107, 160, 201, 1); /* Stronger glow on focus */
+}
+
+
+/* Media Queries for Responsive Design */
+
+/* Tablets (landscape, 768px to 1024px) */
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column; /* Stack sidebar on top for better visibility */
+        height: auto; /* Adjust height */
+    }
+
+    .sidebar {
+        width: 100%; /* Full width for sidebar on tablet */
+        height: auto; /* Adjust height */
+        box-shadow: none; /* Remove sidebar shadow for simplicity */
+    }
+
+    .main-content {
+        padding: 15px; /* Reduce padding for better fit */
+    }
+
+    .header input[type="text"] {
+        width: 250px; /* Smaller search bar width */
+    }
+
+    .header button {
+        padding: 8px 12px; /* Smaller buttons for better alignment */
+    }
+
+    .chart {
+        width: 45%; /* Adjust chart width for better fit */
+        margin-left: 10px; /* Reduce margin */
+    }
+}
+
+/* Tablets (portrait, 641px to 768px) */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column; /* Stack sidebar on top */
+    }
+
+    .sidebar {
+        width: 100%; /* Full width for sidebar */
+        height: auto;
+        padding: 20px; /* Adjust padding */
+    }
+
+    .header input[type="text"] {
+        width: 220px; /* Smaller search bar width */
+    }
+
+    .chart {
+        width: 100%; /* Full width for charts */
+        margin-left: 0; /* Remove margin */
+        margin-bottom: 20px; /* Add margin for spacing */
+    }
+}
+
+/* Mobile Devices (up to 640px) */
+@media (max-width: 640px) {
+    .sidebar {
+        width: 100%; /* Full width for sidebar */
+        padding: 15px; /* Reduce padding */
+        box-shadow: none; /* Remove shadow */
+    }
+
+    .sidebar h2 {
+        font-size: 22px; /* Smaller heading */
+    }
+
+    .sidebar a {
+        font-size: 16px; /* Smaller link text */
+        padding: 12px; /* Reduce padding for links */
+    }
+
+    .header {
+        flex-direction: column; /* Stack elements */
+        align-items: flex-start; /* Align left */
+    }
+
+    .header input[type="text"] {
+        width: 100%; /* Full width search bar */
+        margin-bottom: 10px; /* Add margin for spacing */
+    }
+
+    .header button {
+        padding: 10px 15px; /* Adjust button padding */
+        margin-top: 10px; /* Add spacing between buttons */
+    }
+
+    .chart-container {
+        flex-direction: column; /* Stack charts */
+    }
+
+    .chart {
+        width: 100%; /* Full width for charts */
+        margin-bottom: 20px; /* Add margin */
+    }
+
+    .weather-section {
+        padding: 15px; /* Reduce padding for better fit */
+    }
+}
+
+
+
+
+
+
+
+    </style>
+    
+    
+</head>
+<body>
+
+    <div class="container">
+        <div class="sidebar">
+            <h2>Weather App</h2>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="tables.html">Tables</a>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <input type="text" class="search-bar" id="searchCity" placeholder="Search city...">
+                <div>
+                    <button id="unitToggle">Toggle °C/°F</button>
+                    <button id="geolocationButton">Use My Location</button>
+                </div>
+            </div>
+
+            <div class="weather-section">
+                <h6>Current Weather</h6>
+                <div class="current-weather" id="currentWeather">
+                    <h3>London</h3>
+                    <div class="weather-icon">
+                        <img src="https://openweathermap.org/img/wn/01d.png" alt="Clear" />
+                    </div>
+                    <p><strong>Temp:</strong> 20°C</p>
+                    <p><strong>Condition:</strong> Clear</p>
+                </div>
+                
+                <div class="loading-spinner" id="loadingSpinner"></div>
+            </div>
+
+            <!-- Chart Sections in a Row -->
+            <div class="chart-container">
+                <div class="chart">
+                    <h2>Vertical Bar Chart</h2>
+                    <canvas id="barChart"></canvas>
+                </div>
+
+                <div class="chart">
+                    <h2>Doughnut Chart</h2>
+                    <canvas id="doughnutChart"></canvas>
+                </div>
+
+                <div class="chart">
+                    <h2>Line Chart</h2>
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+    <script>
+
+
+function updateUIBasedOnWeather(condition, isNight) {
+    switch (condition.toLowerCase()) {
+        case 'clear':
+        case 'sunny':
+            document.body.style.background = isNight
+                ? 'linear-gradient(135deg, #2c3e50, #1e115c)' // Darker colors for night
+                : 'linear-gradient(135deg, #f7e67e, #f39c12)'; // Bright colors for day
+            break;
+        case 'clouds':
+            document.body.style.background = 'linear-gradient(135deg, #a0a0a0, #616161)';
+            break;
+        case 'rain':
+            document.body.style.background = 'linear-gradient(135deg, #4a90e2, #2c3e50)';
+            break;
+        case 'snow':
+            document.body.style.background = 'linear-gradient(135deg, #ffffff, #c4c4c4)';
+            break;
+        case 'thunderstorm':
+            document.body.style.background = 'linear-gradient(135deg, #3a3a3a, #757575)';
+            break;
+        case 'fog':
+            document.body.style.background = 'linear-gradient(135deg, #cccccc, #bdbdbd)';
+            break;
+        default:
+            document.body.style.background = 'linear-gradient(135deg, #5159c2, #1e115c)';
+    }
+}
+
+function isNightTime(sunrise, sunset) {
+    const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+    return currentTime < sunrise || currentTime > sunset;
+}
+
+        const apiKey = 'b8c044a6d8defa038dafd4cb46f23219';
+        const currentWeatherContainer = document.getElementById('currentWeather');
+        const searchCity = document.getElementById('searchCity');
+        const unitToggle = document.getElementById('unitToggle');
+        const geolocationButton = document.getElementById('geolocationButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        let isCelsius = true;
+        let currentCity = '';
+
+        // Toggle between Celsius and Fahrenheit
+        unitToggle.addEventListener('click', () => {
+            isCelsius = !isCelsius;
+            if (currentCity) getWeather(currentCity);
+        });
+
+        // Fetch current weather data by city
+        function getWeather(city) {
+            loadingSpinner.style.display = 'block';
+            const units = isCelsius ? 'metric' : 'imperial';
+            const unitLabel = isCelsius ? '°C' : '°F';
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${units}&appid=${apiKey}`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+            const condition = data.weather[0].main; // Get the weather condition
+            const sunrise = data.sys.sunrise;
+            const sunset = data.sys.sunset;
+            const isNight = isNightTime(sunrise, sunset);
+            updateUIBasedOnWeather(condition, isNight);
+          
+                    loadingSpinner.style.display = 'none';
+                    const windSpeed = data.wind.speed; // Keep wind speed in m/s
+                    currentWeatherContainer.innerHTML = `
+                        <h3>${data.name}</h3>
+                        <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png" class="weather-icon" alt="${data.weather[0].main}">
+                        <p><strong>Temp:</strong> ${data.main.temp}${unitLabel}</p>
+                        <p><strong>Condition:</strong> ${data.weather[0].main}</p>
+                        <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+                        <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>
+                    `;
+                    getForecast(city); // Get forecast data and update charts
+                })
+                .catch(error => {
+                    currentWeatherContainer.innerHTML = '<p>City not found. Please try again.</p>';
+                    loadingSpinner.style.display = 'none';
+                });
+        }
+
+        // Fetch forecast data
+        function getForecast(city) {
+            const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const forecastList = data.list;
+                    const tempData = [];
+                    const conditionCount = {};
+
+                    // Extract 5-day forecast data for charts
+                    for (let i = 0; i < forecastList.length; i += 8) {
+                        const forecast = forecastList[i];
+                        tempData.push(forecast.main.temp);
+                        const condition = forecast.weather[0].main;
+
+                        if (conditionCount[condition]) {
+                            conditionCount[condition]++;
+                        } else {
+                            conditionCount[condition] = 1;
+                        }
+                    }
+
+                    // Update charts with the fetched data
+                    updateCharts(tempData, conditionCount);
+                })
+                .catch(error => console.error('Error fetching forecast data:', error));
+        }
+
+        // Update charts
+        let barChart, doughnutChart, lineChart;
+        function updateCharts(tempData, conditionCount) {
+            if (barChart) barChart.destroy();
+            if (doughnutChart) doughnutChart.destroy();
+            if (lineChart) lineChart.destroy();
+
+            // Bar Chart
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: tempData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    },
+                    animation: {
+                        delay: (context) => context.index * 100
+                    }
+                }
+            });
+
+            // Doughnut Chart
+            const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+            const labels = Object.keys(conditionCount);
+            const doughnutData = Object.values(conditionCount);
+            doughnutChart = new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: doughnutData,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+
+            // Line Chart
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            lineChart = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: tempData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // Geolocation
+        geolocationButton.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    getWeatherByLocation(lat, lon);
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        });
+
+        // Fetch weather by geolocation
+        function getWeatherByLocation(lat, lon) {
+            loadingSpinner.style.display = 'block';
+            const units = isCelsius ? 'metric' : 'imperial';
+            const unitLabel = isCelsius ? '°C' : '°F';
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${units}&appid=${apiKey}`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    loadingSpinner.style.display = 'none';
+                    currentWeatherContainer.innerHTML = `
+                        <h3>${data.name}</h3>
+                        <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png" class="weather-icon" alt="${data.weather[0].main}">
+                        <p><strong>Temp:</strong> ${data.main.temp}${unitLabel}</p>
+                        <p><strong>Condition:</strong> ${data.weather[0].main}</p>
+                        <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+                        <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>
+                    `;
+                    getForecast(data.name); // Pass city name to get forecast
+                })
+                .catch(error => {
+                    currentWeatherContainer.innerHTML = '<p>Error fetching weather by location. Please try again.</p>';
+                    loadingSpinner.style.display = 'none';
+                });
+        }
+
+        // Event listener for search input
+        searchCity.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                currentCity = searchCity.value;
+                getWeather(currentCity);
+            }
+        });
+
+        // Initial load
+        getWeather(currentCity);
+    </script>
